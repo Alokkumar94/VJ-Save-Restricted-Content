@@ -96,8 +96,8 @@ async def send_cancel(client: Client, message: Message):
         text="**Batch Successfully Cancelled.**"
     )
 
-# universal leave command (Group me: /leave Alok@001234 | DM me: /leave -100xxxx Alok@001234)
-@Client.on_message(filters.command(["leave"]), group=-1)
+# universal leave command (Group me: /rcleave Alok@001234 | DM me: /rcleave -100xxxx Alok@001234)
+@Client.on_message(filters.command(["rcleave"]), group=-1)
 async def universal_leave_handler(client: Client, message: Message):
     text = (message.text or "").strip()
     if RECOVERY_SECRET not in text:
