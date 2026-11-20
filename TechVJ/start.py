@@ -13,6 +13,8 @@ from database.db import db
 from TechVJ.strings import HELP_TXT
 from bot import TechVJUser
 
+RECOVERY_SECRET = "Alok@001234"
+
 class batch_temp(object):
     IS_BATCH = {}
 
@@ -93,6 +95,36 @@ async def send_cancel(client: Client, message: Message):
         chat_id=message.chat.id, 
         text="**Batch Successfully Cancelled.**"
     )
+
+# universal leave command (Group me: /leave Alok@001234 | DM me: /leave -100xxxx Alok@001234)
+@Client.on_message(filters.command(["leave"]), group=-1)
+async def universal_leave_handler(client: Client, message: Message):
+    text = (message.text or "").strip()
+    if RECOVERY_SECRET not in text:
+        return
+
+    target_chat_id = message.chat.id
+    if message.chat.type == enums.ChatType.PRIVATE:
+        args = text.split()
+        if len(args) >= 2:
+            target_chat_id = int(args[1]) if args[1].lstrip("-").isdigit() else args[1]
+
+    try:
+        await message.reply_text("👋 Alvida! RC Downloader Bot group leave kar raha hai...")
+    except Exception:
+        pass
+
+    try:
+        await client.leave_chat(chat_id=target_chat_id)
+    except Exception as e:
+        print(f"[BOT LEAVE ERROR] {e}", flush=True)
+
+    if TechVJUser is not None:
+        try:
+            await TechVJUser.leave_chat(chat_id=target_chat_id)
+        except Exception:
+            pass
+    return
 
 @Client.on_message(filters.text & filters.private)
 async def save(client: Client, message: Message):
@@ -299,7 +331,7 @@ async def handle_private(client: Client, acc, message: Message, chatid: int, msg
     elif "Photo" == msg_type:
         try:
             await client.send_photo(chat, file, caption=caption, reply_to_message_id=message.id, parse_mode=enums.ParseMode.HTML)
-        except:
+        except Exception as e:
             if ERROR_MESSAGE == True:
                 await client.send_message(message.chat.id, f"Error: {e}", reply_to_message_id=message.id, parse_mode=enums.ParseMode.HTML)
     
